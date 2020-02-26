@@ -22,12 +22,34 @@ provider "google" {
   version = "~> 2.9.0"
   project = local.project
   region  = local.region
+
+  scopes = [
+    # Default scopes
+    "https://www.googleapis.com/auth/compute",
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/ndev.clouddns.readwrite",
+    "https://www.googleapis.com/auth/devstorage.full_control",
+
+    # Required for google_client_openid_userinfo
+    "https://www.googleapis.com/auth/userinfo.email",
+  ]
 }
 
 provider "google-beta" {
   version = "~> 2.9.0"
   project = local.project
   region  = local.region
+
+  scopes = [
+    # Default scopes
+    "https://www.googleapis.com/auth/compute",
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/ndev.clouddns.readwrite",
+    "https://www.googleapis.com/auth/devstorage.full_control",
+
+    # Required for google_client_openid_userinfo
+    "https://www.googleapis.com/auth/userinfo.email",
+  ]
 }
 
 provider "random" {
@@ -57,15 +79,38 @@ module "dev-gke" {
   machine_type                 = "n1-highcpu-2"
 }
 
+# configure kubectl with the credentials of the GKE cluster
+resource "null_resource" "configure_dev_kubectl" {
+  provisioner "local-exec" {
+    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_zone} --project ${local.project}"
+  }
+
+  depends_on = [module.dev-gke]
+}
+
+data "google_client_config" "client" {}
+
+data "google_client_openid_userinfo" "terraform_user" {}
+
+data "template_file" "dev-gke_host_endpoint" {
+  template = module.dev-gke.cluster_endpoint
+}
+
+data "template_file" "access_token" {
+  template = data.google_client_config.client.access_token
+}
+
+data "template_file" "dev-gke_cluster_ca_certificate" {
+  template = module.dev-gke.cluster_ca_certificate
+}
+
 provider "kubernetes" {
-  alias            = "dev"
-  load_config_file = "false"
-  host             = module.dev-gke.cluster_endpoint
-  //username               = "${google_container_cluster.cluster.master_auth.0.username}"
-  //password               = "${google_container_cluster.cluster.master_auth.0.password}"
-  client_certificate     = base64decode(module.dev-gke.client_certificate)
-  client_key             = base64decode(module.dev-gke.client_key)
-  cluster_ca_certificate = module.dev-gke.cluster_ca_certificate
+  alias = "dev"
+
+  load_config_file       = "false"
+  host                   = data.template_file.dev-gke_host_endpoint.rendered
+  token                  = data.template_file.access_token.rendered
+  cluster_ca_certificate = data.template_file.dev-gke_cluster_ca_certificate.rendered
 }
 
 module "dev-mysql" {
@@ -78,10 +123,21 @@ module "dev-mysql" {
   master_user_password = "pa22w0rd"
 }
 
+resource "kubernetes_namespace" "dev" {
+  metadata {
+    annotations = {
+      name = "dev"
+    }
+
+    name = "dev"
+  }
+}
+
 resource "kubernetes_secret" "dev-mysql" {
   provider = kubernetes.dev
   metadata {
-    name = "dev-db-secret"
+    name      = "dev-db-secret"
+    namespace = kubernetes_namespace.dev.metadata[0].name
   }
   data = {
     username = "this is a username"
