@@ -38,39 +38,54 @@ provider "template" {
   version = "~> 2.1"
 }
 
-module "devops" {
+provider "kubernetes" {
+  version = "~> 1.11"
+}
+
+module "dev-gke" {
   source = "./modules/gke-public-cluster"
 
-  cluster_name                 = "devops"
+  cluster_name                 = "dev"
   project                      = local.project
   location                     = local.cluster_zone
   region                       = local.region
-  cluster_service_account_name = "devops-cluster-sa"
+  cluster_service_account_name = "dev-cluster-sa"
   machine_type                 = "n1-highcpu-2"
 }
 
-module "qa" {
-  source = "./modules/gke-public-cluster"
-
-  cluster_name                 = "qa"
-  project                      = local.project
-  location                     = local.cluster_zone
-  region                       = local.region
-  cluster_service_account_name = "qa-cluster-sa"
-  machine_type                 = "n1-highcpu-2"
+provider "kubernetes" {
+  alias = "dev"
+  host  = module.dev-gke.cluster_endpoint
+  //username               = "${google_container_cluster.cluster.master_auth.0.username}"
+  //password               = "${google_container_cluster.cluster.master_auth.0.password}"
+  client_certificate     = base64decode(module.dev-gke.client_certificate)
+  client_key             = base64decode(module.dev-gke.client_key)
+  cluster_ca_certificate = module.dev-gke.cluster_ca_certificate
 }
 
-module "qa-mysql" {
+module "dev-mysql" {
   source = "./modules/mysql-private-ip"
 
   project              = local.project
   region               = local.region
-  name_prefix          = "qa"
-  master_user_name     = "qa"
+  name_prefix          = "dev"
+  master_user_name     = "dev"
   master_user_password = "pa22w0rd"
 }
 
-module "pre-prod" {
+resource "kubernetes_secret" "dev-mysql" {
+  provider = kubernetes.dev
+  metadata {
+    name = "dev-db-secret"
+  }
+  data = {
+    username = "this is a username"
+    password = "this is a password"
+    host     = "this is a host"
+  }
+}
+
+module "prod-gke" {
   source = "./modules/gke-public-cluster"
 
   cluster_name                 = "pre-prod"
