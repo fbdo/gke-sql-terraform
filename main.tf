@@ -1,5 +1,9 @@
 terraform {
   required_version = ">= 0.12.7"
+  backend "gcs" {
+    bucket = "dish-co-devops"
+    prefix = "terraform/state"
+  }
 }
 
 locals {

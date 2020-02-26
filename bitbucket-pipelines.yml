@@ -1,16 +1,18 @@
 image: hashicorp/terraform:full
 pipelines:
-    default:
-        - step:
-            script:
-                - terraform init
-                - terraform validate
-                - terraform plan
-    branches:
-        master:
-            - step:
-                script:
-                    - terraform init
-                    - terraform validate
-                    - terraform plan
-                    - terraform apply -input=false -auto-approve
+  default:
+    - step:
+        script:
+          - terraform init
+          - terraform validate
+          - terraform plan
+  branches:
+    master:
+      - step:
+          script:
+            - echo $KEY_FILE | base64 --decode > ./gcloud-api-key.json
+            - export GOOGLE_BACKEND_CREDENTIALS=./gcloud-api-key.json
+            - terraform init
+            - terraform validate
+            - terraform plan
+            - terraform apply -input=false -auto-approve
