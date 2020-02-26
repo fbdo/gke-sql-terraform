@@ -80,13 +80,13 @@ module "dev-gke" {
 }
 
 # configure kubectl with the credentials of the GKE cluster
-resource "null_resource" "configure_dev_kubectl" {
-  provisioner "local-exec" {
-    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_zone} --project ${local.project}"
-  }
-
-  depends_on = [module.dev-gke]
-}
+#resource "null_resource" "configure_dev_kubectl" {
+#  provisioner "local-exec" {
+#    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_zone} --project ${local.project}"
+#  }
+#
+#  depends_on = [module.dev-gke]
+#}
 
 data "google_client_config" "client" {}
 
@@ -124,6 +124,7 @@ module "dev-mysql" {
 }
 
 resource "kubernetes_namespace" "dev" {
+  provider = kubernetes.dev
   metadata {
     annotations = {
       name = "dev"
