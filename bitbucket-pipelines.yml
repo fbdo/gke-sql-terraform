@@ -11,7 +11,7 @@ pipelines:
       - step:
           script:
             - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
-            - export GOOGLE_BACKEND_CREDENTIALS=./gcloud-api-key.json
+            - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
             - terraform init
             - terraform validate
             - terraform plan
