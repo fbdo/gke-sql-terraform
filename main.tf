@@ -58,8 +58,9 @@ module "dev-gke" {
 }
 
 provider "kubernetes" {
-  alias = "dev"
-  host  = module.dev-gke.cluster_endpoint
+  alias            = "dev"
+  load_config_file = "false"
+  host             = module.dev-gke.cluster_endpoint
   //username               = "${google_container_cluster.cluster.master_auth.0.username}"
   //password               = "${google_container_cluster.cluster.master_auth.0.password}"
   client_certificate     = base64decode(module.dev-gke.client_certificate)
