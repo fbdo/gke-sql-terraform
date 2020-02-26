@@ -43,7 +43,7 @@ provider "template" {
 }
 
 provider "kubernetes" {
-  version = "~> 1.11"
+  version = "1.10.0"
 }
 
 module "dev-gke" {
