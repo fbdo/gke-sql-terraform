@@ -147,14 +147,14 @@ resource "kubernetes_secret" "dev-mysql" {
   }
 }
 
-module "prod-gke" {
-  source = "./modules/gke-public-cluster"
+#module "prod-gke" {
+#  source = "./modules/gke-public-cluster"
 
-  cluster_name                 = "pre-prod"
-  project                      = local.project
-  location                     = local.cluster_region
-  region                       = local.region
-  max_node_count               = 10
-  cluster_service_account_name = "preprod-cluster-sa"
-  machine_type                 = "n1-highcpu-2"
-}
+#  cluster_name                 = "pre-prod"
+#  project                      = local.project
+#  location                     = local.cluster_region
+#  region                       = local.region
+#  max_node_count               = 10
+#  cluster_service_account_name = "preprod-cluster-sa"
+#  machine_type                 = "n1-highcpu-2"
+#}
