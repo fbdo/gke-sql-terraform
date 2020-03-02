@@ -134,6 +134,17 @@ resource "kubernetes_namespace" "dev" {
   }
 }
 
+resource "kubernetes_namespace" "devops" {
+  provider = kubernetes.dev
+  metadata {
+    annotations = {
+      name = "devops"
+    }
+
+    name = "devops"
+  }
+}
+
 resource "kubernetes_secret" "dev-mysql" {
   provider = kubernetes.dev
   metadata {
