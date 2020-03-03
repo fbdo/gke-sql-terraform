@@ -76,7 +76,7 @@ module "dev-gke" {
   location                     = local.cluster_zone
   region                       = local.region
   cluster_service_account_name = "dev-cluster-sa"
-  machine_type                 = "n1-highcpu-2"
+  machine_type                 = "n1-highcpu-4"
 }
 
 # configure kubectl with the credentials of the GKE cluster
@@ -152,9 +152,9 @@ resource "kubernetes_secret" "dev-mysql" {
     namespace = kubernetes_namespace.dev.metadata[0].name
   }
   data = {
-    username = "this is a username"
-    password = "this is a password"
-    host     = "this is a host"
+    username = "dev"
+    password = "pa22w0rd"
+    host     = module.dev-mysql.master_private_ip
   }
 }
 
