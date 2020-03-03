@@ -77,6 +77,7 @@ module "dev-gke" {
   region                       = local.region
   cluster_service_account_name = "dev-cluster-sa"
   machine_type                 = "n1-highcpu-4"
+  max_node_count               = 10
 }
 
 # configure kubectl with the credentials of the GKE cluster
