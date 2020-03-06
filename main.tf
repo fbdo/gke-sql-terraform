@@ -133,6 +133,8 @@ resource "kubernetes_namespace" "dev" {
 
     name = "dev"
   }
+
+  depends_on = [module.dev-gke]
 }
 
 resource "kubernetes_namespace" "devops" {
@@ -144,6 +146,8 @@ resource "kubernetes_namespace" "devops" {
 
     name = "devops"
   }
+
+  depends_on = [module.dev-gke]
 }
 
 resource "kubernetes_secret" "dev-mysql" {
@@ -157,6 +161,8 @@ resource "kubernetes_secret" "dev-mysql" {
     password = "pa22w0rd"
     host     = module.dev-mysql.master_private_ip
   }
+
+  depends_on = [module.dev-gke]
 }
 
 #module "prod-gke" {
