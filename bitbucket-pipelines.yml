@@ -1,19 +1,30 @@
 image: hashicorp/terraform:full
+
+definitions:
+  steps:
+    - step: &terraform-plan
+        name: Plan Terraform Changes
+        script:
+          - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
+          - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
+          - export KUBERNETES_SERVICE_HOST=
+          - terraform init -input=false
+          - terraform validate
+          - terraform plan -out=tfplan -input=false
+        artifacts:
+          - tfplan
+
 pipelines:
   default:
-    - step:
-        script:
-          - terraform init
-          - terraform validate
-          - terraform plan
+    - step: *terraform-plan
   branches:
     master:
+      - step: *terraform-plan
       - step:
+          name: Apply Terraform Changes
+          trigger: manual
           script:
             - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
             - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
             - export KUBERNETES_SERVICE_HOST=
-            - terraform init
-            - terraform validate
-            - terraform plan
-            - terraform apply -input=false -auto-approve
+            - terraform apply -input=false -auto-approve tfplan
