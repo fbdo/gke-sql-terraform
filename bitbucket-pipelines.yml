@@ -1,6 +1,8 @@
 image: hashicorp/terraform:full
 
 definitions:
+  caches:
+    terraform: ~/.terraform/modules
   steps:
     - step: &terraform-plan
         name: Plan Terraform Changes
@@ -13,6 +15,8 @@ definitions:
           - terraform plan -out=tfplan -input=false
         artifacts:
           - tfplan
+        caches:
+          - terraform
 
 pipelines:
   default:
@@ -27,4 +31,5 @@ pipelines:
             - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
             - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
             - export KUBERNETES_SERVICE_HOST=
+            - terraform init -input=false
             - terraform apply -input=false -auto-approve tfplan
