@@ -1,4 +1,4 @@
-image: hashicorp/terraform:full  
+image: hashicorp/terraform:full
 
 definitions:
   caches:
@@ -24,8 +24,7 @@ definitions:
         caches:
           - terraform
         script:
-          - ./scripts/terraform-destry.sh
-    
+          - ./scripts/terraform-destroy.sh
 
 pipelines:
   custom:
