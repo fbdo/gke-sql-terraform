@@ -1,20 +1,4 @@
-image: hashicorp/terraform:full
-
-scripts:
-  script: &terraform-setup
-    - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
-    - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
-    - export KUBERNETES_SERVICE_HOST=
-    - terraform init -input=false
-  script: &terraform-plan
-    - terraform validate
-    - terraform plan -out=tfplan -input=false
-  script: &terraform-apply
-    - terraform apply -input=false -auto-approve tfplan
-  script: &terraform-destroy
-    - terraform destroy -auto-approve
-
-  
+image: hashicorp/terraform:full  
 
 definitions:
   caches:
@@ -24,7 +8,8 @@ definitions:
         name: Plan Terraform Changes
         caches:
           - terraform
-        script: [*terraform-setup, *terraform-plan]
+        script:
+          - ./scripts/terraform-plan.sh
         artifacts:
           - tfplan
     - step: &apply-step
@@ -32,12 +17,14 @@ definitions:
         caches:
           - terraform
         trigger: manual
-        script: [*terraform-setup, *terraform-apply]
+        script:
+          - ./scripts/terraform-apply.sh
     - step: &destroy-step
         name: Destroy Environment
         caches:
           - terraform
-        script: [*terraform-setup, *terraform-destroy]
+        script:
+          - ./scripts/terraform-destry.sh
     
 
 pipelines:
