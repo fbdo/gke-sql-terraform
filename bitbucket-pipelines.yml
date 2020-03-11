@@ -6,6 +6,8 @@ definitions:
   steps:
     - step: &terraform-plan
         name: Plan Terraform Changes
+        caches:
+          - terraform
         script:
           - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
           - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
@@ -15,14 +17,14 @@ definitions:
           - terraform plan -out=tfplan -input=false
         artifacts:
           - tfplan
-        caches:
-          - terraform
 
 pipelines:
   custom:
     destroy:
       - step:
           name: Destroy Environment
+          caches:
+            - terraform
           script:
             - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
             - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
@@ -37,6 +39,8 @@ pipelines:
       - step:
           name: Apply Terraform Changes
           trigger: manual
+          caches:
+            - terraform
           script:
             - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
             - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
