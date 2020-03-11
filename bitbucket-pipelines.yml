@@ -1,49 +1,52 @@
 image: hashicorp/terraform:full
 
+scripts:
+  script: &terraform-setup
+    - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
+    - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
+    - export KUBERNETES_SERVICE_HOST=
+    - terraform init -input=false
+  script: &terraform-plan
+    - terraform validate
+    - terraform plan -out=tfplan -input=false
+  script: &terraform-apply
+    - terraform apply -input=false -auto-approve tfplan
+  script: &terraform-destroy
+    - terraform destroy -auto-approve
+
+  
+
 definitions:
   caches:
     terraform: .terraform/modules
   steps:
-    - step: &terraform-setup
-        name: Setup Terraform Environment
-        script:
-          - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
-          - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
-          - export KUBERNETES_SERVICE_HOST=
-          - terraform init -input=false
+    - step: &plan-step
+        name: Plan Terraform Changes
         caches:
           - terraform
-    - step: &terraform-plan
-        name: Plan Terraform Changes
-        script:
-          - terraform validate
-          - terraform plan -out=tfplan -input=false
+        script: [*terraform-setup, *terraform-plan]
         artifacts:
           - tfplan
+    - step: &apply-step
+        name: Apply Terraform Changes
+        caches:
+          - terraform
+        trigger: manual
+        script: [*terraform-setup, *terraform-apply]
+    - step: &destroy-step
+        name: Destroy Environment
+        caches:
+          - terraform
+        script: [*terraform-setup, *terraform-destroy]
+    
 
 pipelines:
   custom:
     destroy:
-      - step: *terraform-setup
-      - step:
-          name: Destroy Environment
-          script:
-            - terraform destroy -auto-approve
+      - step: *destroy-step
   default:
-    - step: *terraform-setup
-    - step: *terraform-plan
+    - step: *plan-step
   branches:
     master:
-      - step: *terraform-setup
-      - step: *terraform-plan
-      - step:
-          name: Apply Terraform Changes
-          trigger: manual
-          caches:
-            - terraform
-          script:
-            - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
-            - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
-            - export KUBERNETES_SERVICE_HOST=
-            - terraform init -input=false
-            - terraform apply -input=false -auto-approve tfplan
+      - step: *plan-step
+      - step: *apply-step
