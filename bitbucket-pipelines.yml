@@ -4,15 +4,18 @@ definitions:
   caches:
     terraform: .terraform/modules
   steps:
-    - step: &terraform-plan
-        name: Plan Terraform Changes
-        caches:
-          - terraform
+    - step: &terraform-setup
+        name: Setup Terraform Environment
         script:
           - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
           - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
           - export KUBERNETES_SERVICE_HOST=
           - terraform init -input=false
+        caches:
+          - terraform
+    - step: &terraform-plan
+        name: Plan Terraform Changes
+        script:
           - terraform validate
           - terraform plan -out=tfplan -input=false
         artifacts:
@@ -21,20 +24,17 @@ definitions:
 pipelines:
   custom:
     destroy:
+      - step: *terraform-setup
       - step:
           name: Destroy Environment
-          caches:
-            - terraform
           script:
-            - echo $KEY_FILE | base64 -d > ./gcloud-api-key.json
-            - export GOOGLE_APPLICATION_CREDENTIALS=./gcloud-api-key.json
-            - export KUBERNETES_SERVICE_HOST=
-            - terraform init -input=false
             - terraform destroy -auto-approve
   default:
+    - step: *terraform-setup
     - step: *terraform-plan
   branches:
     master:
+      - step: *terraform-setup
       - step: *terraform-plan
       - step:
           name: Apply Terraform Changes
