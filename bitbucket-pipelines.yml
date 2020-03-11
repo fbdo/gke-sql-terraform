@@ -2,7 +2,7 @@ image: hashicorp/terraform:full
 
 definitions:
   caches:
-    terraform: ~/.terraform/modules
+    terraform: .terraform/modules
   steps:
     - step: &terraform-plan
         name: Plan Terraform Changes
