@@ -20,6 +20,8 @@ jobs:
           tf_actions_subcommand: "init"
           tf_actions_comment: false
           args: '-backend-config="bucket=nordcloud-technical-assignment-infra"'
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: "Terraform Validate"
         uses: hashicorp/terraform-github-actions@master
         with:
