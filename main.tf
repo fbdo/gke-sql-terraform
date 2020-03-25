@@ -7,21 +7,16 @@ terraform {
 }
 
 locals {
-  project = "dish-co"
-  region  = "europe-west3"
-}
-
-locals {
-  cluster_region                      = local.region
-  cluster_zone                        = "${local.region}-a"
+  cluster_region                      = var.region
+  cluster_location                    = "${var.cluster_location == null ? "${var.region}-a" : var.cluster_location}"
   cluster_service_account_name        = "gke-cluster"
   cluster_service_account_description = "GKE cluster service account"
 }
 
 provider "google" {
   version = "~> 2.9.0"
-  project = local.project
-  region  = local.region
+  project = var.project
+  region  = var.region
 
   scopes = [
     # Default scopes
@@ -37,8 +32,8 @@ provider "google" {
 
 provider "google-beta" {
   version = "~> 2.9.0"
-  project = local.project
-  region  = local.region
+  project = var.project
+  region  = var.region
 
   scopes = [
     # Default scopes
@@ -72,9 +67,9 @@ module "dev-gke" {
   source = "./modules/gke-public-cluster"
 
   cluster_name                 = "dev"
-  project                      = local.project
-  location                     = local.cluster_zone
-  region                       = local.region
+  project                      = var.project
+  location                     = local.cluster_location
+  region                       = var.region
   cluster_service_account_name = "dev-cluster-sa"
   machine_type                 = "n1-highcpu-4"
   max_node_count               = 10
@@ -83,7 +78,7 @@ module "dev-gke" {
 # configure kubectl with the credentials of the GKE cluster
 #resource "null_resource" "configure_dev_kubectl" {
 #  provisioner "local-exec" {
-#    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_zone} --project ${local.project}"
+#    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_location} --project ${var.project}"
 #  }
 #
 #  depends_on = [module.dev-gke]
@@ -117,8 +112,8 @@ provider "kubernetes" {
 module "dev-mysql" {
   source = "./modules/mysql-private-ip"
 
-  project              = local.project
-  region               = local.region
+  project              = var.project
+  region               = var.region
   name_prefix          = "dev"
   master_user_name     = "dev"
   master_user_password = "pa22w0rd"
@@ -164,15 +159,3 @@ resource "kubernetes_secret" "dev-mysql" {
 
   depends_on = [module.dev-gke]
 }
-
-#module "prod-gke" {
-#  source = "./modules/gke-public-cluster"
-
-#  cluster_name                 = "pre-prod"
-#  project                      = local.project
-#  location                     = local.cluster_region
-#  region                       = local.region
-#  max_node_count               = 10
-#  cluster_service_account_name = "preprod-cluster-sa"
-#  machine_type                 = "n1-highcpu-2"
-#}
