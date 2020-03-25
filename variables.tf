@@ -28,6 +28,6 @@ variable "cluster_name" {
 }
 
 variable "environments" {
-  type    = "list"
+  type    = "list(string)"
   default = ["dev", "qa", "prod"]
 }
