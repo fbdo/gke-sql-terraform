@@ -20,3 +20,9 @@ variable "cluster_machine_type" {
   type        = string
   default     = "n1-standard-2"
 }
+
+variable "cluster_name" {
+  description = "The cluster name (Optional)"
+  type        = string
+  default     = "dev"
+}

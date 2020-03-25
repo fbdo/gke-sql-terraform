@@ -66,11 +66,11 @@ provider "kubernetes" {
 module "dev-gke" {
   source = "./modules/gke-public-cluster"
 
-  cluster_name                 = "dev"
+  cluster_name                 = var.cluster_name
   project                      = var.project
   location                     = local.cluster_location
   region                       = var.region
-  cluster_service_account_name = "dev-cluster-sa"
+  cluster_service_account_name = "${var.cluster_name}-cluster-sa"
   machine_type                 = var.cluster_machine_type
   max_node_count               = 10
 }
@@ -101,15 +101,13 @@ data "template_file" "dev-gke_cluster_ca_certificate" {
 }
 
 provider "kubernetes" {
-  alias = "dev"
-
   load_config_file       = "false"
   host                   = data.template_file.dev-gke_host_endpoint.rendered
   token                  = data.template_file.access_token.rendered
   cluster_ca_certificate = data.template_file.dev-gke_cluster_ca_certificate.rendered
 }
 
-module "dev-mysql" {
+module "mysql" {
   source = "./modules/mysql-private-ip"
 
   project              = var.project
@@ -132,23 +130,10 @@ resource "kubernetes_namespace" "dev" {
   depends_on = [module.dev-gke]
 }
 
-resource "kubernetes_namespace" "devops" {
+resource "kubernetes_secret" "mysql" {
   provider = kubernetes.dev
   metadata {
-    annotations = {
-      name = "devops"
-    }
-
-    name = "devops"
-  }
-
-  depends_on = [module.dev-gke]
-}
-
-resource "kubernetes_secret" "dev-mysql" {
-  provider = kubernetes.dev
-  metadata {
-    name      = "dev-db-secret"
+    name      = "db-secret"
     namespace = kubernetes_namespace.dev.metadata[0].name
   }
   data = {
