@@ -63,7 +63,7 @@ provider "kubernetes" {
   version = "1.10.0"
 }
 
-module "dev-gke" {
+module "gke" {
   source = "./modules/gke-public-cluster"
 
   cluster_name                 = var.cluster_name
@@ -74,15 +74,6 @@ module "dev-gke" {
   machine_type                 = var.cluster_machine_type
   max_node_count               = 10
 }
-
-# configure kubectl with the credentials of the GKE cluster
-#resource "null_resource" "configure_dev_kubectl" {
-#  provisioner "local-exec" {
-#    command = "gcloud container clusters get-credentials dev --zone ${local.cluster_location} --project ${var.project}"
-#  }
-#
-#  depends_on = [module.dev-gke]
-#}
 
 data "google_client_config" "client" {}
 
@@ -129,7 +120,7 @@ resource "kubernetes_namespace" "dev" {
     name = "dev"
   }
 
-  depends_on = [module.dev-gke]
+  depends_on = [module.gke]
 }
 
 resource "kubernetes_secret" "mysql" {
@@ -141,8 +132,8 @@ resource "kubernetes_secret" "mysql" {
   data = {
     username = "dev"
     password = "pa22w0rd"
-    host     = module.dev-mysql.master_private_ip
+    host     = module.mysql.master_private_ip
   }
 
-  depends_on = [module.dev-gke]
+  depends_on = [module.gke]
 }
