@@ -14,3 +14,9 @@ variable "cluster_location" {
   type        = string
   default     = null
 }
+
+variable "cluster_machine_type" {
+  description = "The machine type of each gke node in the pool (Optional)"
+  type        = string
+  default     = "n1-standard-2"
+}

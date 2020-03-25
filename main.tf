@@ -71,7 +71,7 @@ module "dev-gke" {
   location                     = local.cluster_location
   region                       = var.region
   cluster_service_account_name = "dev-cluster-sa"
-  machine_type                 = "n1-highcpu-4"
+  machine_type                 = var.cluster_machine_type
   max_node_count               = 10
 }
 
