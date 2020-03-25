@@ -47,4 +47,4 @@ jobs:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: "apply"
           tf_actions_comment: false
-          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}" -auto-approve tfplan'
+          args: "-auto-approve tfplan"
