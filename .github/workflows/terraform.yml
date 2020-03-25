@@ -40,4 +40,11 @@ jobs:
           tf_actions_version: 0.12.13
           tf_actions_subcommand: "plan"
           tf_actions_comment: false
-          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}"'
+          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}" -out=tfplan'
+      - name: "Terraform Apply"
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: 0.12.13
+          tf_actions_subcommand: "apply"
+          tf_actions_comment: false
+          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}" -auto-approve tfplan'
