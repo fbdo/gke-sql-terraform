@@ -59,6 +59,10 @@ provider "template" {
   version = "~> 2.1"
 }
 
+provider "kubernetes" {
+  version = "1.10.0"
+}
+
 module "dev-gke" {
   source = "./modules/gke-public-cluster"
 
@@ -97,7 +101,8 @@ data "template_file" "dev-gke_cluster_ca_certificate" {
 }
 
 provider "kubernetes" {
-  version                = "1.10.0"
+  alias = "dev"
+
   load_config_file       = "false"
   host                   = data.template_file.dev-gke_host_endpoint.rendered
   token                  = data.template_file.access_token.rendered
@@ -130,7 +135,7 @@ resource "kubernetes_namespace" "dev" {
 resource "kubernetes_secret" "mysql" {
   provider = kubernetes.dev
   metadata {
-    name      = "db-secret"
+    name      = "dev-db-secret"
     namespace = kubernetes_namespace.dev.metadata[0].name
   }
   data = {
