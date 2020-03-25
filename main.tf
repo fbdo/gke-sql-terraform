@@ -80,15 +80,15 @@ data "google_client_config" "client" {}
 data "google_client_openid_userinfo" "terraform_user" {}
 
 data "template_file" "dev-gke_host_endpoint" {
-  template = module.dev-gke.cluster_endpoint
+  template = module.gke.cluster_endpoint
 }
 
 data "template_file" "access_token" {
   template = data.google_client_config.client.access_token
 }
 
-data "template_file" "dev-gke_cluster_ca_certificate" {
-  template = module.dev-gke.cluster_ca_certificate
+data "template_file" "gke_cluster_ca_certificate" {
+  template = module.gke.cluster_ca_certificate
 }
 
 provider "kubernetes" {
@@ -97,7 +97,7 @@ provider "kubernetes" {
   load_config_file       = "false"
   host                   = data.template_file.dev-gke_host_endpoint.rendered
   token                  = data.template_file.access_token.rendered
-  cluster_ca_certificate = data.template_file.dev-gke_cluster_ca_certificate.rendered
+  cluster_ca_certificate = data.template_file.gke_cluster_ca_certificate.rendered
 }
 
 module "mysql" {
