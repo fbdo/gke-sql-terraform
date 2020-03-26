@@ -59,10 +59,6 @@ provider "template" {
   version = "~> 2.1"
 }
 
-provider "kubernetes" {
-  version = "1.10.0"
-}
-
 module "gke" {
   source = "./modules/gke-public-cluster"
 
@@ -92,7 +88,7 @@ data "template_file" "gke_cluster_ca_certificate" {
 }
 
 provider "kubernetes" {
-  alias = "dev"
+  version = "1.10.0"
 
   load_config_file       = "false"
   host                   = data.template_file.dev-gke_host_endpoint.rendered
@@ -100,40 +96,62 @@ provider "kubernetes" {
   cluster_ca_certificate = data.template_file.gke_cluster_ca_certificate.rendered
 }
 
+resource "kubernetes_namespace" "envs" {
+  for_each = toset(var.environments)
+
+  metadata {
+    annotations = {
+      name = each.key
+    }
+
+    name = each.key
+  }
+
+  depends_on = [module.gke]
+}
+
+resource "random_password" "mysql" {
+  length  = 16
+  special = true
+}
+
 module "mysql" {
   source = "./modules/mysql-private-ip"
 
   project              = var.project
   region               = var.region
-  name_prefix          = "dev"
-  master_user_name     = "dev"
-  master_user_password = "pa22w0rd"
+  name_prefix          = var.cluster_name
+  master_user_name     = var.cluster_name
+  master_user_password = random_password.mysql.result
 }
 
-resource "kubernetes_namespace" "dev" {
-  provider = kubernetes.dev
-  metadata {
-    annotations = {
-      name = "dev"
-    }
+resource "google_sql_database" "envs" {
+  for_each = toset(var.environments)
+  instance = module.mysql.master_instance_name
 
-    name = "dev"
-  }
+  name = each.key
+}
 
-  depends_on = [module.gke]
+resource "google_sql_user" "users" {
+  for_each = toset(var.environments)
+
+  name     = "notejam-${each.key}"
+  instance = module.mysql.master_instance_name
+  password = "changeme"
 }
 
 resource "kubernetes_secret" "mysql" {
-  provider = kubernetes.dev
+  for_each = toset(var.environments)
+
   metadata {
-    name      = "dev-db-secret"
-    namespace = kubernetes_namespace.dev.metadata[0].name
+    name      = "db-secret"
+    namespace = each.key
   }
   data = {
-    username = "dev"
-    password = "pa22w0rd"
+    username = "notejam-${each.key}"
+    password = "changeme"
     host     = module.mysql.master_private_ip
   }
 
-  depends_on = [module.gke]
+  depends_on = [kubernetes_namespace.envs]
 }
