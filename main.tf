@@ -139,7 +139,8 @@ resource "google_sql_user" "users" {
 
   name     = "notejam-${each.key}"
   instance = module.mysql.master_instance_name
-  password = "changeme"
+  password = "changeme42"
+  host     = "%"
 }
 
 resource "kubernetes_secret" "mysql" {
@@ -151,9 +152,9 @@ resource "kubernetes_secret" "mysql" {
   }
   data = {
     username = "notejam-${each.key}"
-    password = "changeme"
+    password = "changeme42"
     host     = module.mysql.master_private_ip
   }
 
-  depends_on = [kubernetes_namespace.envs]
+  depends_on = [kubernetes_namespace.envs, google_sql_user.users]
 }
