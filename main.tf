@@ -62,13 +62,14 @@ provider "template" {
 module "gke" {
   source = "./modules/gke-public-cluster"
 
-  cluster_name                 = var.cluster_name
-  project                      = var.project
-  location                     = local.cluster_location
-  region                       = var.region
-  cluster_service_account_name = "${var.cluster_name}-cluster-sa"
-  machine_type                 = var.cluster_machine_type
-  max_node_count               = 10
+  cluster_name                  = var.cluster_name
+  project                       = var.project
+  location                      = local.cluster_location
+  region                        = var.region
+  cluster_service_account_name  = "${var.cluster_name}-cluster-sa"
+  cluster_service_account_roles = ["roles/cloudsql.client"]
+  machine_type                  = var.cluster_machine_type
+  max_node_count                = 10
 }
 
 data "google_client_config" "client" {}

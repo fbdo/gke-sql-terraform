@@ -41,6 +41,12 @@ variable "cluster_service_account_description" {
   default     = "Example GKE Cluster Service Account managed by Terraform"
 }
 
+variable "cluster_service_account_roles" {
+  description = "Additional roles to be added to the service account used by GKE cluster."
+  type        = list(string)
+  default     = []
+}
+
 variable "max_node_count" {
   description = "The max number of nodes in the cluster"
   type        = number
