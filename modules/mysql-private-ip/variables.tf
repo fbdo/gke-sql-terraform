@@ -29,6 +29,12 @@ variable "master_user_password" {
   type        = string
 }
 
+variable "private_network" {
+  description = "The resource link for the VPC network from which the Cloud SQL instance is accessible for private IP."
+  type        = string
+  default     = null
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # Generally, these values won't need to be changed.

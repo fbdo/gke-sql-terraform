@@ -124,6 +124,7 @@ module "mysql" {
   name_prefix          = var.cluster_name
   master_user_name     = var.cluster_name
   master_user_password = random_password.mysql.result
+  private_network      = module.gke.cluster_network
 }
 
 resource "google_sql_database" "envs" {

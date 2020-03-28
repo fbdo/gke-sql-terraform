@@ -20,3 +20,8 @@ output "cluster_ca_certificate" {
   sensitive   = true
   value       = module.gke_cluster.cluster_ca_certificate
 }
+
+output "cluster_network" {
+  description = "A link to the network where the cluster is deployed to"
+  value       = module.vpc_network.network
+}
