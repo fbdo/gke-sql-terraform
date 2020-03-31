@@ -29,5 +29,5 @@ variable "cluster_name" {
 
 variable "environments" {
   type    = list(string)
-  default = ["dev", "qa", "prod"]
+  default = ["dev", "prod"]
 }
