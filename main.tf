@@ -134,12 +134,19 @@ resource "google_sql_database" "envs" {
   name = each.key
 }
 
+resource "random_password" "mysql_users" {
+  for_each = toset(var.environments)
+
+  length  = 16
+  special = true
+}
+
 resource "google_sql_user" "users" {
   for_each = toset(var.environments)
 
   name     = "notejam-${each.key}"
   instance = module.mysql.master_instance_name
-  password = "changeme42"
+  password = random_password.mysql_users[each.key].result
   host     = "%"
 }
 
@@ -151,8 +158,8 @@ resource "kubernetes_secret" "mysql" {
     namespace = each.key
   }
   data = {
-    username = "notejam-${each.key}"
-    password = "changeme42"
+    username = google_sql_user.users[each.key].name
+    password = google_sql_user.users[each.key].password
     host     = module.mysql.master_private_ip
   }
 
