@@ -40,7 +40,7 @@ jobs:
           tf_actions_version: 0.12.23
           tf_actions_subcommand: "plan"
           tf_actions_comment: false
-          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}" -var="cluster_name=notejam" -var="cluster_machine_type=n1-highcpu-8" -out=tfplan'
+          args: '-var="project=${{ secrets.GCP_PROJECT_ID }}" -var="cluster_name=notejam" -var="cluster_machine_type=n1-highcpu-8" -var="region=europe-west3" -var="cluster_location=europe-west3-a" -out=tfplan'
       - name: "Terraform Apply"
         uses: hashicorp/terraform-github-actions@master
         with:
