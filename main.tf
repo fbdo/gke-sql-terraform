@@ -69,7 +69,7 @@ module "gke" {
   cluster_service_account_name  = "${var.cluster_name}-cluster-sa"
   cluster_service_account_roles = ["roles/cloudsql.client"]
   machine_type                  = var.cluster_machine_type
-  max_node_count                = 10
+  max_node_count                = var.cluster_max_node_count
 }
 
 data "google_client_config" "client" {}
