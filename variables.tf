@@ -30,7 +30,7 @@ variable "cluster_machine_type" {
 variable "cluster_max_node_count" {
   description = "The max number of nodes in the gke pool (Optional)"
   type        = number
-  default     = 3
+  default     = 6
 }
 
 variable "environments" {
